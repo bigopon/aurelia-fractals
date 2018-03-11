@@ -1,0 +1,42 @@
+<template>
+  <require from='./pythagoras'></require>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .control {
+      float: left;
+      vertical-align: top;
+      width: 150px;
+      height: 50px;
+    }
+  </style>
+  <div style='height: 50px;'>
+    <label class='control'>
+      Throttle (${throttleValue}ms)<br/>
+      <input type='range' step='1' min='0' value.bind='throttleValue | number' />
+    </label>
+    <label class='control'>
+      Flush all queues<br/>
+      <input type='checkbox' checked.bind='unlimited' />
+    </label>
+    <label class='control' style='width: calc(100% - 300px);'>
+      Queue capacity: ${taskQueue.microTaskQueueCapacity}<br/>
+      <input type='range' step='128' min='128' max.bind='1028 * 1028' value.bind='taskQueue.microTaskQueueCapacity | number' style='width: 500px;'/>
+    </label>
+  </div>
+  <svg width.bind='width' height.bind='height' style='border: 1px solid grey;' ref='svg'>
+    <g as-element='pythagoras'
+      x.bind='width / 2 - 40'
+      y.bind='height - baseW'
+      w.bind='baseW'
+      h.bind='baseW'
+      height-factor.bind='heightFactor & throttle:50'
+      lean.bind='lean & throttle:50'
+      lvl.bind='0'
+      maxlvl.bind='currentMax'></g>
+  </svg>
+</template>

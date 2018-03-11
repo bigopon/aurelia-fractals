@@ -1,0 +1,31 @@
+<template transform.bind='getTransform(x, y, w, A, B)'>
+  <svg remove>
+    <rect
+      x='0'
+      y='0'
+      width.bind='w'
+      height.bind='w'
+      css='fill: ${interpolateViridis(lvl / maxlvl) & throttle:50}' />
+
+    <g as-element='pythagoras'
+      if.bind='(lvl < maxlvl - 1) && (nextLeft >= 1) & throttle:50'
+      w.bind='nextLeft'
+      x.bind='0'
+      y.bind='-nextLeft'
+      lvl.bind='lvl + 1'
+      maxlvl.bind='maxlvl'
+      height-factor.bind='heightFactor'
+      lean.bind='lean'
+      left='true'></g>
+    <g as-element='pythagoras'
+      if.bind='(lvl < maxlvl - 1) && (nextRight >= 1) & throttle:50'
+      w.bind='nextRight'
+      x.bind='w - nextRight'
+      y.bind='-nextRight'
+      lvl.bind='lvl + 1'
+      maxlvl.bind='maxlvl'
+      height-factor.bind='heightFactor'
+      lean.bind='lean'
+      right='true'></g>
+  </svg>
+</template>
