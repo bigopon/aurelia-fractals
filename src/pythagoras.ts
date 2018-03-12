@@ -1,11 +1,21 @@
 import { customElement, bindable, containerless, processContent, DOM, ViewCompiler, ViewResources, autoinject, TaskQueue, viewEngineHooks } from "aurelia-framework";
 import { interpolateViridis as vivid } from 'd3-scale';
 
+export interface IPythagorasProps {
+  w: number;
+  x: number;
+  y: number;
+  heightFactor: number;
+  lean: number;
+  lvl: number;
+  maxlvl: number;
+}
+
 // @containerless()
 @customElement('pythagoras')
-export class Pythagoras {
+export class Pythagoras implements IPythagorasProps {
 
-  @bindable()
+  @bindable({ changeHandler: 'calculate' })
   w: number;
 
   @bindable()
@@ -14,23 +24,23 @@ export class Pythagoras {
   @bindable()
   y: number;
 
-  @bindable()
+  @bindable({ changeHandler: 'calculate' })
   heightFactor: number
 
-  @bindable()
+  @bindable({ changeHandler: 'calculate' })
   lean: number;
-
-  @bindable()
-  left: number;
-
-  @bindable()
-  right: number;
 
   @bindable()
   lvl: number;
 
   @bindable()
   maxlvl: number;
+
+  @bindable()
+  left: boolean;
+
+  @bindable()
+  right: boolean;
 
   shouldRender: boolean;
 
@@ -39,30 +49,13 @@ export class Pythagoras {
   A: number = 0;
   B: number = 0;
 
-  constructor(
-    // public taskQueue: TaskQueue
-  ) {
-
-  }
-
-
-  bind() {
+  attached() {
     this.calculate();
   }
 
-  interpolateViridis(val: number) {
-    return vivid(val);
-  }
+  interpolateViridis = vivid;
 
-  propertyChanged() {
-    this.calculate();
-  }
-
-  call() {
-    this.calculate();
-  }
-
-  calculate = () => {
+  calculate() {
     const calc = memoizedCalc({
       w: this.w,
       heightFactor: this.heightFactor,
@@ -75,7 +68,7 @@ export class Pythagoras {
   };
 
   getTransform(x: number, y: number, w: number, A: number, B: number) {
-    return `translate(${this.x} ${this.y}) ${
+    return `translate(${x} ${y}) ${
       this.left
         ? `rotate(${-A} 0 ${w})`
         : this.right
@@ -114,26 +107,28 @@ interface ICalcParams {
   lean: number;
 }
 
-const memo: Record<string, ICalcResult> = {};
-const rad2Deg = radians => radians * (180 / Math.PI);
-const key = ({ w, heightFactor, lean }: ICalcParams) => `${w}-${heightFactor}-${lean}`;
-const memoizedCalc = (args: ICalcParams) => {
-  const memoKey = key(args);
+const memoizedCalc = (() => {
+  const memo: Record<string, ICalcResult> = {};
+  const rad2Deg = radians => radians * (180 / Math.PI);
+  const key = ({ w, heightFactor, lean }: ICalcParams) => `${w}-${heightFactor}-${lean}`;
+  return (args: ICalcParams) => {
+    const memoKey = key(args);
 
-  if (memoKey in memo) {
-    return memo[memoKey];
-  } else {
-    const { w, heightFactor, lean } = args;
-    const trigH = heightFactor * w;
+    if (memoKey in memo) {
+      return memo[memoKey];
+    } else {
+      const { w, heightFactor, lean } = args;
+      const trigH = heightFactor * w;
 
-    const result = {
-      nextRight: Math.sqrt(trigH ** 2 + (w * (0.5 + lean)) ** 2),
-      nextLeft: Math.sqrt(trigH ** 2 + (w * (0.5 - lean)) ** 2),
-      A: rad2Deg(Math.atan(trigH / ((0.5 - lean) * w))),
-      B: rad2Deg(Math.atan(trigH / ((0.5 + lean) * w)))
-    };
+      const result = {
+        nextRight: Math.sqrt(trigH ** 2 + (w * (0.5 + lean)) ** 2),
+        nextLeft: Math.sqrt(trigH ** 2 + (w * (0.5 - lean)) ** 2),
+        A: rad2Deg(Math.atan(trigH / ((0.5 - lean) * w))),
+        B: rad2Deg(Math.atan(trigH / ((0.5 + lean) * w)))
+      };
 
-    memo[memoKey] = result;
-    return result
+      memo[memoKey] = result;
+      return result
+    }
   }
-}
+})();

@@ -14,7 +14,11 @@
       height: 50px;
     }
   </style>
-  <div style='height: 50px;'>
+  <div style='height: 50px;' css='max-width: ${width}px;'>
+    <label class='control'>
+      Delay Update (test)<br/>
+      <input type='checkbox' checked.bind='delayUpdate' />
+    </label>
     <label class='control'>
       Throttle (${throttleValue}ms)<br/>
       <input type='range' step='1' min='0' value.bind='throttleValue | number' />
@@ -23,9 +27,9 @@
       Flush all queues<br/>
       <input type='checkbox' checked.bind='unlimited' />
     </label>
-    <label class='control' style='width: calc(100% - 300px);'>
+    <label class='control' style='width: calc(100% - 450px);'>
       Queue capacity: ${taskQueue.microTaskQueueCapacity}<br/>
-      <input type='range' step='128' min='128' max.bind='1028 * 1028' value.bind='taskQueue.microTaskQueueCapacity | number' style='width: 500px;'/>
+      <input type='range' step='128' min='128' max.bind='1028 * 1028' value.bind='taskQueue.microTaskQueueCapacity | number' style='width: 100%;'/>
     </label>
   </div>
   <svg width.bind='width' height.bind='height' style='border: 1px solid grey;' ref='svg'>
@@ -34,8 +38,8 @@
       y.bind='height - baseW'
       w.bind='baseW'
       h.bind='baseW'
-      height-factor.bind='heightFactor & throttle:50'
-      lean.bind='lean & throttle:50'
+      height-factor.bind='heightFactor'
+      lean.bind='lean'
       lvl.bind='0'
       maxlvl.bind='currentMax'></g>
   </svg>

@@ -4,6 +4,8 @@ import { TaskQueue, autoinject, observable, ViewFactory } from 'aurelia-framewor
 import { throttle } from './throttle';
 import * as AuBinding from 'aurelia-binding'
 
+let dataAttributeAccessor = (AuBinding as any).dataAttributeAccessor;
+let originalSetValue = dataAttributeAccessor.setValue;
 
 class Queuer {
 
@@ -28,6 +30,11 @@ export class App {
   @observable()
   throttleValue: number = 0;
 
+  @observable()
+  delayUpdate: boolean;
+  delayUpdateChanged: (delay: boolean) => void;
+
+
   width = Math.min(window.innerWidth, 1280);
   height = this.width * (600 / 1280);
   currentMax = 0;
@@ -41,11 +48,15 @@ export class App {
   constructor(
     public taskQueue: TaskQueue
   ) {
-    (AuBinding as any).dataAttributeAccessor.setValue = function(value, obj, propertyName) {
-      taskQueue.queueMicroTask(new Queuer(value, obj, propertyName));
-    };
-    // (AuBinding as any).setTaskQueue(taskQueue);
-    // (taskQueue as any).microTaskQueueCapacity = 1028;
+    this.delayUpdateChanged = (delay: boolean) => {
+      if (delay) {
+        dataAttributeAccessor.setValue = function(value, obj, propertyName) {
+          taskQueue.queueMicroTask(new Queuer(value, obj, propertyName));
+        };
+      } else {
+        dataAttributeAccessor.setValue = originalSetValue;
+      }
+    }
     /**
      * Override builtin queue flusher function. Ignore try catch to have more perf
      */
@@ -102,7 +113,6 @@ export class App {
   throttleValueChanged(value: number) {
     if (this.svg) {
       d3select(this.svg)
-        .on('mousemove', null)
         .on('mousemove',
           !value
             ? this.onMousemove
